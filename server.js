@@ -2,38 +2,51 @@
 
 const express = require('express');
 const cors = require('cors');
+const os = require('os');
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
 
+// Fonction pour obtenir l'adresse IP locale
+const getLocalIpAddress = () => {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
+    }
+    return 'localhost';
+};
+
 app.listen(port, () => {
-    console.log(`Serveur en écoute sur http://localhost:${port}`);
+    const ipAddress = getLocalIpAddress();
+    console.log(`Serveur en écoute sur http://${ipAddress}:${port}`);
 });
 
 app.get('/', (req, res) => {
     res.send('Hello world');
 });
 
-// Function to validate date
-function isValidDate(date) {
-    return !isNaN(date.getTime());
-}
+// Fonction pour valider la date
+const estDateValide = (date) => !isNaN(date.getTime());
 
-// API route for date management
+// Route API pour la gestion des dates
 app.get('/api/:date?', (req, res) => {
+    const { date: dateParam } = req.params;
     let date;
 
-    if (!req.params.date) {
+    if (!dateParam) {
         date = new Date();
-    } else if (!isNaN(req.params.date)) {
-        date = new Date(parseInt(req.params.date));
     } else {
-        date = new Date(req.params.date);
+        const parsedDate = isNaN(dateParam) ? new Date(dateParam) : new Date(parseInt(dateParam));
+        date = estDateValide(parsedDate) ? parsedDate : null;
     }
 
-    if (!isValidDate(date)) {
+    if (!date) {
         res.json({ error: "Invalid Date" });
     } else {
         res.json({
