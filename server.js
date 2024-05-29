@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = 3000;
-
+let dateNow = new Date();
 app.use(cors());
 app.use(express.json());
 
@@ -17,6 +17,13 @@ app.listen(port, () => {
 app.get('/', (req, res) => {
     res.send('Hello world');
 });
+function isValideDate(date) {
+    return date.getTime() === "Invalid Date";
+}
+
+app.get('/api', function(req,res){
+    res.json({unix: dateNow.getTime()})
+})
 
 // Route API pour la gestion des dates
 app.get('/api/:date?', (req, res) => {
